@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { CompareResponse } from '../api/types'
 import { fileDescription, formatLabel } from '../utils/format'
+import { formatCompareMode, formatOcrEngine } from '../utils/ocr'
 import { DiffList } from './DiffList'
 
 interface CompareResultsProps {
@@ -43,6 +44,21 @@ export function CompareResults({ result }: CompareResultsProps) {
           </span>
         </span>
       </div>
+
+      {(result.ocr_mode || result.ocr_engine_used) && (
+        <div className="results__ocr-info">
+          {result.ocr_mode && (
+            <span className="results__ocr-chip">
+              {formatCompareMode(result.ocr_mode)}
+            </span>
+          )}
+          {result.ocr_engine_used && (
+            <span className="results__ocr-chip">
+              {formatOcrEngine(result.ocr_engine_used)}
+            </span>
+          )}
+        </div>
+      )}
 
       <div className="results__stats">
         <article className="stat-card">

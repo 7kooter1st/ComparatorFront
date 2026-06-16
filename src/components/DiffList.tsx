@@ -18,11 +18,7 @@ export function DiffList({
   file2Label,
 }: DiffListProps) {
   if (differences.length === 0) {
-    return (
-      <div className="diff-list diff-list--empty">
-        <p>Различий не обнаружено — содержимое совпадает.</p>
-      </div>
-    )
+    return <div className="diff-list diff-list--empty" />
   }
 
   return (

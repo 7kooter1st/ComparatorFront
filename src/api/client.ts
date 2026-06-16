@@ -1,4 +1,5 @@
 import type { CompareResponse, ErrorResponse, HealthResponse } from './types'
+import type { CompareMode } from './types'
 import { ApiError } from './types'
 
 const API_BASE = import.meta.env.VITE_API_BASE ?? ''
@@ -29,10 +30,12 @@ export async function checkHealth(): Promise<HealthResponse> {
 export async function compareDocuments(
   file1: File,
   file2: File,
+  mode: CompareMode,
 ): Promise<CompareResponse> {
   const formData = new FormData()
   formData.append('file1', file1)
   formData.append('file2', file2)
+  formData.append('mode', mode)
 
   const response = await fetch(`${API_BASE}/api/compare`, {
     method: 'POST',

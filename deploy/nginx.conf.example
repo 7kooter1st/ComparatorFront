@@ -1,0 +1,45 @@
+# Пример для Ubuntu/Debian: скопируйте в /etc/nginx/sites-available/comparator
+# и включите: sudo ln -s ... sites-enabled/
+#
+# Перед деплоем:
+#   npm ci && npm run build
+#   sudo cp -r dist/* /var/www/comparator/
+
+server {
+    listen 80;
+    server_name example.com;
+
+    root /var/www/comparator;
+    index index.html;
+
+    # Статика Vite (с хешами в именах — долгий кэш)
+    location /assets/ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+        try_files $uri =404;
+    }
+
+    # API — прокси на Flask/другой бэкенд
+    location /api/ {
+        proxy_pass http://127.0.0.1:5000;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        client_max_body_size 50M;
+    }
+
+    # SPA: все остальные маршруты — index.html
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}
+
+# Если фронт в подкаталоге /comparator/, задайте VITE_BASE_PATH=/comparator/
+# и используйте:
+#
+# location /comparator/ {
+#     alias /var/www/comparator/;
+#     try_files $uri $uri/ /comparator/index.html;
+# }

@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
 import { checkHealth, compareDocuments } from './api/client'
-import type { CompareResponse } from './api/types'
+import type { CompareMode, CompareResponse, OcrModesConfig } from './api/types'
 import { ApiError } from './api/types'
 import { CompareResults } from './components/CompareResults'
 import { FileUpload } from './components/FileUpload'
 import { HealthStatus } from './components/HealthStatus'
+import { ModeSelector } from './components/ModeSelector'
 import { ACCEPTED_DOCUMENTS } from './utils/format'
 import './App.css'
 
@@ -12,12 +13,12 @@ function App() {
   const [healthStatus, setHealthStatus] = useState<
     'loading' | 'online' | 'offline'
   >('loading')
-  const [serviceName, setServiceName] = useState<string>()
+  const [ocrModes, setOcrModes] = useState<OcrModesConfig>()
+  const [compareMode, setCompareMode] = useState<CompareMode>('accurate')
   const [file1, setFile1] = useState<File | null>(null)
   const [file2, setFile2] = useState<File | null>(null)
   const [isComparing, setIsComparing] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [errorHint, setErrorHint] = useState<string | null>(null)
   const [result, setResult] = useState<CompareResponse | null>(null)
 
   useEffect(() => {
@@ -28,7 +29,14 @@ function App() {
         const health = await checkHealth()
         if (!cancelled) {
           setHealthStatus('online')
-          setServiceName(health.service)
+          if (health.ocr_modes) {
+            setOcrModes(health.ocr_modes)
+            setCompareMode((current) =>
+              health.ocr_modes!.supported.includes(current)
+                ? current
+                : health.ocr_modes!.default,
+            )
+          }
         }
       } catch {
         if (!cancelled) {
@@ -53,16 +61,14 @@ function App() {
 
     setIsComparing(true)
     setError(null)
-    setErrorHint(null)
     setResult(null)
 
     try {
-      const response = await compareDocuments(file1, file2)
+      const response = await compareDocuments(file1, file2, compareMode)
       setResult(response)
     } catch (err) {
       if (err instanceof ApiError) {
         setError(err.message)
-        setErrorHint(err.hint ?? null)
       } else {
         setError(
           'Не удалось выполнить сравнение. Проверьте подключение к серверу.',
@@ -78,33 +84,31 @@ function App() {
     setFile2(null)
     setResult(null)
     setError(null)
-    setErrorHint(null)
   }
 
   return (
     <div className="app">
       <header className="app__header">
-        <div>
-          <p className="app__eyebrow">PDF & DOCX Comparator</p>
-          <h1>Сравнение документов</h1>
-          <p className="app__subtitle">
-            Загрузите два файла в формате DOCX и/или PDF. Формат определяется
-            автоматически на сервере. Тексты нормализуются путём удаления
-            пробелов, затем сравниваются.
-          </p>
-        </div>
-        <HealthStatus status={healthStatus} serviceName={serviceName} />
+        <h1>Сравнение документов</h1>
+        <HealthStatus status={healthStatus} />
       </header>
 
       <main className="app__main">
         <section className="upload-card">
           <h2>Загрузка файлов</h2>
+
+          <ModeSelector
+            value={compareMode}
+            onChange={setCompareMode}
+            disabled={isComparing}
+            ocrModes={ocrModes}
+          />
+
           <div className="upload-card__grid">
             <FileUpload
               id="file1-upload"
               label="Файл 1"
               accept={ACCEPTED_DOCUMENTS}
-              hint="DOCX или PDF — формат определяется автоматически"
               file={file1}
               disabled={isComparing}
               onChange={setFile1}
@@ -113,7 +117,6 @@ function App() {
               id="file2-upload"
               label="Файл 2"
               accept={ACCEPTED_DOCUMENTS}
-              hint="DOCX или PDF — формат определяется автоматически"
               file={file2}
               disabled={isComparing}
               onChange={setFile2}
@@ -139,17 +142,9 @@ function App() {
             </button>
           </div>
 
-          {healthStatus === 'offline' && (
-            <p className="upload-card__warning">
-              Бэкенд недоступен. Убедитесь, что Flask-сервер запущен на порту
-              5000.
-            </p>
-          )}
-
           {error && (
             <div className="alert alert--error" role="alert">
               <p>{error}</p>
-              {errorHint && <p className="alert__hint">{errorHint}</p>}
             </div>
           )}
         </section>

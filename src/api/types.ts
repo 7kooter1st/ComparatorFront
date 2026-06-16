@@ -1,6 +1,21 @@
+export type CompareMode = 'fast' | 'accurate'
+
+export interface OcrModeInfo {
+  dual_ocr: boolean
+  description: string
+}
+
+export interface OcrModesConfig {
+  default: CompareMode
+  supported: CompareMode[]
+  fast: OcrModeInfo
+  accurate: OcrModeInfo
+}
+
 export interface HealthResponse {
   status: string
   service: string
+  ocr_modes?: OcrModesConfig
 }
 
 export type FileFormat = 'docx' | 'pdf'
@@ -26,6 +41,14 @@ export interface DifferenceEntry {
   file2: string | null
 }
 
+export interface OcrProfile {
+  mode: CompareMode
+  zoom: number
+  dual_ocr: boolean
+  page_workers: number
+  paddle_use_gpu: boolean
+}
+
 export interface CompareResponse {
   file1: FileInfo
   file2: FileInfo
@@ -35,6 +58,12 @@ export interface CompareResponse {
   normalized_file2_length: number
   diff_summary: DiffSummary
   differences: DifferenceEntry[]
+  ocr_mode?: CompareMode
+  ocr_profile?: OcrProfile
+  ocr_engine_used?: string
+  comparison_mode?: string
+  message?: string
+  ocr_validation_failed?: boolean
 }
 
 export interface ErrorResponse {

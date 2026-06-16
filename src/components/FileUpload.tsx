@@ -2,7 +2,6 @@ interface FileUploadProps {
   id: string
   label: string
   accept: string
-  hint: string
   file: File | null
   disabled?: boolean
   onChange: (file: File | null) => void
@@ -18,7 +17,6 @@ export function FileUpload({
   id,
   label,
   accept,
-  hint,
   file,
   disabled = false,
   onChange,
@@ -28,7 +26,6 @@ export function FileUpload({
       <label className="file-upload__label" htmlFor={id}>
         {label}
       </label>
-      <p className="file-upload__hint">{hint}</p>
       <div className="file-upload__control">
         <input
           id={id}
@@ -49,9 +46,7 @@ export function FileUpload({
             <span className="file-upload__name">{file.name}</span>
             <span className="file-upload__size">{formatFileSize(file.size)}</span>
           </div>
-        ) : (
-          <span className="file-upload__placeholder">Файл не выбран</span>
-        )}
+        ) : null}
       </div>
     </div>
   )
