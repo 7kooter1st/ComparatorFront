@@ -1,0 +1,128 @@
+.diff-entry {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.diff-entry--file1 {
+  border-left: 3px solid var(--file1-color);
+}
+
+.diff-entry--file2 {
+  border-left: 3px solid var(--file2-color);
+}
+
+.diff-entry--changed {
+  border-left: 3px solid var(--warning);
+}
+
+.diff-entry-header {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.75rem;
+  padding: 0.75rem 1rem;
+  background: var(--surface-elevated);
+  border-bottom: 1px solid var(--border);
+}
+
+.diff-entry-index {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.diff-type-badge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+}
+
+.diff-type-badge--only_in_file1 {
+  background: var(--file1-bg);
+  color: var(--file1-color);
+}
+
+.diff-type-badge--only_in_file2 {
+  background: var(--file2-bg);
+  color: var(--file2-color);
+}
+
+.diff-type-badge--changed {
+  background: var(--warning-bg);
+  color: var(--warning);
+}
+
+.diff-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+}
+
+@media (max-width: 768px) {
+  .diff-columns {
+    grid-template-columns: 1fr;
+  }
+}
+
+.diff-column {
+  padding: 1rem;
+  min-width: 0;
+}
+
+.diff-columns--single {
+  grid-template-columns: 1fr;
+}
+
+.diff-column + .diff-column {
+  border-left: 1px solid var(--border);
+}
+
+.diff-columns--single .diff-column + .diff-column {
+  border-left: none;
+  border-top: 1px solid var(--border);
+}
+
+@media (max-width: 768px) {
+  .diff-columns {
+    grid-template-columns: 1fr;
+  }
+
+  .diff-column + .diff-column {
+    border-left: none;
+    border-top: 1px solid var(--border);
+  }
+}
+
+.diff-entry-header .line-ref {
+  margin-left: auto;
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: var(--radius-sm);
+  background: var(--surface-elevated);
+  color: var(--text-muted);
+}
+
+.diff-column-label {
+  display: block;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+}
+
+.diff-text {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--text-heading);
+}

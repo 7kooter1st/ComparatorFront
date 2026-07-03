@@ -1,0 +1,97 @@
+.job-progress {
+  margin-top: 1.5rem;
+  padding: 1.25rem 1.5rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+}
+
+.job-progress-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.job-progress-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-heading);
+}
+
+.job-progress-id {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  padding: 0.2rem 0.5rem;
+  border-radius: var(--radius-sm);
+  background: var(--surface-elevated);
+}
+
+.job-progress-bar-wrap {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--surface-elevated);
+  overflow: hidden;
+  margin-bottom: 0.75rem;
+}
+
+.job-progress-bar {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--accent);
+  transition: width 0.35s ease;
+}
+
+.job-progress-bar--done {
+  background: var(--success);
+}
+
+.job-progress-bar--failed {
+  background: var(--danger);
+}
+
+.job-progress-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+}
+
+.job-progress-chunks {
+  font-family: var(--mono);
+  font-weight: 600;
+  color: var(--text-heading);
+}
+
+.job-progress-status {
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 600;
+}
+
+.job-progress-message {
+  margin: 0.5rem 0 0;
+  font-size: 0.875rem;
+  color: var(--text);
+}
+
+.job-progress-files {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-top: 0.75rem;
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+}
+
+.job-progress-topic {
+  margin: 0.5rem 0 0;
+  font-size: 0.75rem;
+  font-family: var(--mono);
+  color: var(--text-muted);
+}
