@@ -9,6 +9,8 @@ import { JobError } from '../types/api';
 
 export interface JobSocketCallbacks {
   onStatus?: (status: JobStatusData) => void;
+  /** WebSocket соединение установлено — начало отсчёта */
+  onOpen?: () => void;
 }
 
 function getWsBase(): string {
@@ -56,9 +58,10 @@ export function watchJob(
   websocketUrl: string | undefined,
   callbacks: JobSocketCallbacks,
   signal?: AbortSignal,
-): Promise<ComparisonResult> {
+): Promise<{ comparison: ComparisonResult; wsRoundTripMs: number }> {
   return new Promise((resolve, reject) => {
     let settled = false;
+    let wsStart: number | null = null;
     const url = resolveJobWebSocketUrl(jobId, websocketUrl);
     const ws = new WebSocket(url);
 
@@ -81,6 +84,11 @@ export function watchJob(
 
     signal?.addEventListener('abort', onAbort, { once: true });
 
+    ws.onopen = () => {
+      wsStart = performance.now();
+      callbacks.onOpen?.();
+    };
+
     ws.onmessage = (event) => {
       let message: WebSocketEvent;
       try {
@@ -96,9 +104,11 @@ export function watchJob(
 
       if (message.type === 'result' && isResultData(message.data)) {
         const resultData = message.data;
+        const wsRoundTripMs =
+          wsStart != null ? Math.round(performance.now() - wsStart) : 0;
         cleanup();
         signal?.removeEventListener('abort', onAbort);
-        finish(() => resolve(resultData.comparison));
+        finish(() => resolve({ comparison: resultData.comparison, wsRoundTripMs }));
         return;
       }
 

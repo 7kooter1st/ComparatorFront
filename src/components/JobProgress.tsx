@@ -1,11 +1,14 @@
 import type { JobProgressState } from '../types/api';
+import { formatElapsedMs } from '../utils/format';
 import './JobProgress.css';
 
 interface JobProgressProps {
   progress: JobProgressState;
+  wsActive?: boolean;
+  wsElapsedMs?: number | null;
 }
 
-export function JobProgress({ progress }: JobProgressProps) {
+export function JobProgress({ progress, wsActive = false, wsElapsedMs }: JobProgressProps) {
   const percent =
     progress.totalChunks > 0
       ? Math.min(100, Math.round((progress.processedChunks / progress.totalChunks) * 100))
@@ -18,9 +21,16 @@ export function JobProgress({ progress }: JobProgressProps) {
     <section className="job-progress" aria-live="polite">
       <div className="job-progress-header">
         <h2 className="job-progress-title">Обработка задачи</h2>
-        <span className="job-progress-id" title={progress.jobId}>
-          {progress.jobId.slice(0, 8)}…
-        </span>
+        <div className="job-progress-header-right">
+          {wsActive && wsElapsedMs != null && (
+            <span className="job-progress-timer" title="От открытия WebSocket до ответа">
+              WebSocket: {formatElapsedMs(wsElapsedMs)}
+            </span>
+          )}
+          <span className="job-progress-id" title={progress.jobId}>
+            {progress.jobId.slice(0, 8)}…
+          </span>
+        </div>
       </div>
 
       <div className="job-progress-bar-wrap">

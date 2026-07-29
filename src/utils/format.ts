@@ -41,6 +41,15 @@ export function formatFileSize(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
+export function formatElapsedMs(ms: number): string {
+  if (ms < 1000) return `${ms} мс`;
+  const sec = ms / 1000;
+  if (sec < 60) return `${sec.toFixed(1)} с`;
+  const min = Math.floor(sec / 60);
+  const remSec = sec % 60;
+  return `${min}:${remSec.toFixed(1).padStart(4, '0')}`;
+}
+
 export function pluralize(n: number, one: string, few: string, many: string): string {
   const mod10 = n % 10;
   const mod100 = n % 100;

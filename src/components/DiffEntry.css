@@ -126,3 +126,13 @@
   word-break: break-word;
   color: var(--text-heading);
 }
+
+.diff-highlight {
+  background: var(--delete-bg);
+  color: var(--delete-text);
+  border-radius: 2px;
+  padding: 0 1px;
+  font-weight: 600;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}

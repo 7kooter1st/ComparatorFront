@@ -1,5 +1,5 @@
 import type { ComparisonViewModel } from '../types/api';
-import { countByKind, pluralize } from '../utils/format';
+import { countByKind, formatElapsedMs, pluralize } from '../utils/format';
 import './SummaryCard.css';
 
 interface SummaryCardProps {
@@ -7,7 +7,7 @@ interface SummaryCardProps {
 }
 
 export function SummaryCard({ result }: SummaryCardProps) {
-  const { comparison, jobId, totalChunks, file1, file2 } = result;
+  const { comparison, jobId, totalChunks, file1, file2, wsRoundTripMs } = result;
   const stats = countByKind(comparison.differences);
   const identical = comparison.identical;
 
@@ -43,6 +43,11 @@ export function SummaryCard({ result }: SummaryCardProps) {
             {jobId.slice(0, 8)}…
           </span>
           <span className="summary-job-chunks">{totalChunks} чанков</span>
+          {wsRoundTripMs != null && (
+            <span className="summary-job-timer" title="WebSocket: от подключения до result">
+              {formatElapsedMs(wsRoundTripMs)}
+            </span>
+          )}
         </div>
       </div>
 

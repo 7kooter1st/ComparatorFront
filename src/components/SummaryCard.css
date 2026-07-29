@@ -97,6 +97,13 @@
   color: var(--text-muted);
 }
 
+.summary-job-timer {
+  font-family: var(--mono);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+
 .summary-files {
   margin-top: 1rem;
   font-size: 0.8125rem;

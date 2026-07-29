@@ -5,6 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:public": "vite --host 0.0.0.0 --port 5173",
+    "tunnel": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/cloudflare-tunnel.ps1",
+    "demo": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"Write-Host 'Терминал 1: npm run dev'; Write-Host 'Терминал 2: npm run tunnel'\"",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview"

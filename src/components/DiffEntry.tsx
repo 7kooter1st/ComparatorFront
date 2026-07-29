@@ -1,5 +1,6 @@
 import type { LineDifference } from '../types/api';
 import { DIFF_KIND_LABELS, getLineDiffKind } from '../utils/format';
+import { HighlightedLine } from './HighlightedLine';
 import './DiffEntry.css';
 
 interface DiffEntryProps {
@@ -35,14 +36,18 @@ export function DiffEntry({ entry, index }: DiffEntryProps) {
         {showFile1 && (
           <div className="diff-column">
             <span className="diff-column-label">Документ 1</span>
-            <pre className="diff-text">{entry.file1_line ?? '—'}</pre>
+            <pre className="diff-text">
+              <HighlightedLine text={entry.file1_line} span={entry.file1_span} />
+            </pre>
           </div>
         )}
 
         {showFile2 && (
           <div className="diff-column">
             <span className="diff-column-label">Документ 2</span>
-            <pre className="diff-text">{entry.file2_line ?? '—'}</pre>
+            <pre className="diff-text">
+              <HighlightedLine text={entry.file2_line} span={entry.file2_span} />
+            </pre>
           </div>
         )}
       </div>

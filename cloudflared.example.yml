@@ -1,0 +1,15 @@
+# Пример именованного туннеля (опционально, для постоянного домена).
+# Быстрый демо-туннель: npm run tunnel (без этого файла).
+#
+# 1. cloudflared tunnel login
+# 2. cloudflared tunnel create comparator-front
+# 3. Скопируйте credentials JSON в ~/.cloudflared/<tunnel-id>.json
+# 4. Замените tunnel ID и hostname ниже
+
+# tunnel: <TUNNEL-UUID>
+# credentials-file: C:\Users\<you>\.cloudflared\<TUNNEL-UUID>.json
+
+ingress:
+  - hostname: comparator.example.com
+    service: http://127.0.0.1:5173
+  - service: http_status:404

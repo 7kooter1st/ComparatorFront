@@ -80,6 +80,7 @@ export async function getComparisonResult(
 export interface RunCompareJobOptions {
   onQueued?: (job: CompareJobResponse) => void;
   onProgress?: (progress: JobProgressState) => void;
+  onWsOpen?: () => void;
 }
 
 export async function runCompareJob(
@@ -103,10 +104,11 @@ export async function runCompareJob(
   };
   options.onProgress?.(initialProgress);
 
-  const comparison = await watchJob(
+  const { comparison, wsRoundTripMs } = await watchJob(
     job.job_id,
     job.websocket_url,
     {
+      onOpen: options.onWsOpen,
       onStatus: (status) => {
         options.onProgress?.({
           jobId: job.job_id,
@@ -129,5 +131,6 @@ export async function runCompareJob(
     totalChunks: job.total_chunks,
     file1: job.file1,
     file2: job.file2,
+    wsRoundTripMs,
   };
 }

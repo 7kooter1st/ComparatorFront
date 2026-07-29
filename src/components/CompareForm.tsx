@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { runCompareJob } from '../api/client';
 import type { ComparisonViewModel, JobProgressState } from '../types/api';
 import { ApiError, JobError } from '../types/api';
@@ -17,9 +17,38 @@ export function CompareForm({ onResult, onError, onStart }: CompareFormProps) {
   const [file2, setFile2] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState<JobProgressState | null>(null);
+  const [wsElapsedMs, setWsElapsedMs] = useState<number | null>(null);
+  const [wsTimerActive, setWsTimerActive] = useState(false);
+  const wsStartedAtRef = useRef<number | null>(null);
   const abortRef = useRef<AbortController | null>(null);
 
   const canSubmit = Boolean(file1 && file2) && !loading;
+
+  useEffect(() => {
+    if (!wsTimerActive || !loading) return;
+
+    const tick = () => {
+      if (wsStartedAtRef.current != null) {
+        setWsElapsedMs(Math.round(performance.now() - wsStartedAtRef.current));
+      }
+    };
+
+    tick();
+    const id = window.setInterval(tick, 100);
+    return () => window.clearInterval(id);
+  }, [wsTimerActive, loading]);
+
+  const handleWsOpen = useCallback(() => {
+    wsStartedAtRef.current = performance.now();
+    setWsElapsedMs(0);
+    setWsTimerActive(true);
+  }, []);
+
+  const resetWsTimer = useCallback(() => {
+    wsStartedAtRef.current = null;
+    setWsElapsedMs(null);
+    setWsTimerActive(false);
+  }, []);
 
   const handleSubmit = useCallback(
     async (event: React.FormEvent) => {
@@ -32,13 +61,14 @@ export function CompareForm({ onResult, onError, onStart }: CompareFormProps) {
 
       setLoading(true);
       setProgress(null);
+      resetWsTimer();
       onStart();
 
       try {
         const result = await runCompareJob(
           file1,
           file2,
-          { onProgress: setProgress },
+          { onProgress: setProgress, onWsOpen: handleWsOpen },
           controller.signal,
         );
         onResult(result);
@@ -54,16 +84,18 @@ export function CompareForm({ onResult, onError, onStart }: CompareFormProps) {
       } finally {
         setLoading(false);
         setProgress(null);
+        resetWsTimer();
       }
     },
-    [file1, file2, onResult, onError, onStart],
+    [file1, file2, onResult, onError, onStart, handleWsOpen, resetWsTimer],
   );
 
   const handleCancel = useCallback(() => {
     abortRef.current?.abort();
     setLoading(false);
     setProgress(null);
-  }, []);
+    resetWsTimer();
+  }, [resetWsTimer]);
 
   return (
     <form className="compare-form" onSubmit={handleSubmit}>
@@ -103,7 +135,9 @@ export function CompareForm({ onResult, onError, onStart }: CompareFormProps) {
         )}
       </div>
 
-      {loading && progress && <JobProgress progress={progress} />}
+      {loading && progress && (
+        <JobProgress progress={progress} wsElapsedMs={wsElapsedMs} wsActive={wsTimerActive} />
+      )}
 
       {loading && !progress && (
         <p className="form-hint">Загрузка файлов и постановка задачи в Kafka…</p>

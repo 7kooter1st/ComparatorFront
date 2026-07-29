@@ -24,10 +24,15 @@ export interface JobStatusData {
   updated_at?: string;
 }
 
+/** Индексы символов в строке [start, end) — end не включается */
+export type CharSpan = [number, number];
+
 export interface LineDifference {
   line_number?: number | null;
   file1_line?: string | null;
   file2_line?: string | null;
+  file1_span?: CharSpan | null;
+  file2_span?: CharSpan | null;
 }
 
 export interface ComparisonResult {
@@ -78,6 +83,8 @@ export interface ComparisonViewModel {
   totalChunks: number;
   file1: FileChunkStats;
   file2: FileChunkStats;
+  /** Время от открытия WebSocket до сообщения result */
+  wsRoundTripMs?: number;
 }
 
 export interface JobProgressState {
