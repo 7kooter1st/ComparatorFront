@@ -11,6 +11,11 @@
   background: linear-gradient(135deg, var(--success-bg) 0%, var(--surface) 60%);
 }
 
+.summary-card--content-equal {
+  border-color: var(--success-border);
+  background: linear-gradient(135deg, var(--success-bg) 0%, var(--surface) 60%);
+}
+
 .summary-card--diff {
   border-color: var(--warning-border);
   background: linear-gradient(135deg, var(--warning-bg) 0%, var(--surface) 60%);
@@ -26,6 +31,10 @@
 
 .summary-card--identical .summary-main {
   margin-bottom: 0;
+}
+
+.summary-card--content-equal .summary-main {
+  margin-bottom: 1.5rem;
 }
 
 .summary-verdict {
@@ -147,9 +156,9 @@
 }
 
 .stat-item--total .stat-value { color: var(--danger); }
-.stat-item--file1 .stat-value { color: var(--file1-color); }
-.stat-item--file2 .stat-value { color: var(--file2-color); }
-.stat-item--changed .stat-value { color: var(--warning); }
+.stat-item--substantive .stat-value { color: var(--danger); }
+.stat-item--ocr .stat-value { color: var(--accent); }
+.stat-item--technical .stat-value { color: var(--text-muted); }
 
 @media (max-width: 640px) {
   .summary-main {

@@ -1,5 +1,9 @@
 import type { ComparisonViewModel } from '../types/api';
-import { countByKind, formatElapsedMs, pluralize } from '../utils/format';
+import {
+  countByCategory,
+  formatElapsedMs,
+  pluralize,
+} from '../utils/format';
 import './SummaryCard.css';
 
 interface SummaryCardProps {
@@ -8,11 +12,23 @@ interface SummaryCardProps {
 
 export function SummaryCard({ result }: SummaryCardProps) {
   const { comparison, jobId, totalChunks, file1, file2, wsRoundTripMs } = result;
-  const stats = countByKind(comparison.differences);
-  const identical = comparison.identical;
+  const stats = countByCategory(comparison.differences);
+  const verdict = comparison.verdict ?? (
+    comparison.identical ? 'identical' : 'different'
+  );
+  const identical = verdict === 'identical';
+  const contentEqual = verdict === 'content_equal';
 
   return (
-    <section className={`summary-card ${identical ? 'summary-card--identical' : 'summary-card--diff'}`}>
+    <section
+      className={`summary-card ${
+        identical
+          ? 'summary-card--identical'
+          : contentEqual
+            ? 'summary-card--content-equal'
+            : 'summary-card--diff'
+      }`}
+    >
       <div className="summary-main">
         <div className="summary-verdict">
           {identical ? (
@@ -23,14 +39,35 @@ export function SummaryCard({ result }: SummaryCardProps) {
                 <p className="verdict-desc">Модель не обнаружила различий</p>
               </div>
             </>
+          ) : contentEqual ? (
+            <>
+              <span className="verdict-icon verdict-icon--ok" aria-hidden>✓</span>
+              <div>
+                <h2 className="verdict-title">Содержимое совпадает</h2>
+                <p className="verdict-desc">
+                  Найдены только технические различия
+                </p>
+              </div>
+            </>
           ) : (
             <>
               <span className="verdict-icon verdict-icon--warn" aria-hidden>!</span>
               <div>
                 <h2 className="verdict-title">Обнаружены различия</h2>
                 <p className="verdict-desc">
-                  Найдено {stats.total}{' '}
-                  {pluralize(stats.total, 'различие', 'различия', 'различий')}
+                  {stats.substantive > 0
+                    ? `Найдено ${stats.substantive} ${pluralize(
+                        stats.substantive,
+                        'содержательное различие',
+                        'содержательных различия',
+                        'содержательных различий',
+                      )}`
+                    : `${stats.ocrUncertain} ${pluralize(
+                        stats.ocrUncertain,
+                        'различие требует',
+                        'различия требуют',
+                        'различий требуют',
+                      )} проверки OCR`}
                 </p>
               </div>
             </>
@@ -54,9 +91,9 @@ export function SummaryCard({ result }: SummaryCardProps) {
       {!identical && (
         <div className="summary-stats">
           <StatItem label="Всего" value={stats.total} variant="total" />
-          <StatItem label="Только в док. 1" value={stats.onlyInFile1} variant="file1" />
-          <StatItem label="Только в док. 2" value={stats.onlyInFile2} variant="file2" />
-          <StatItem label="Изменено" value={stats.changed} variant="changed" />
+          <StatItem label="Содержательные" value={stats.substantive} variant="substantive" />
+          <StatItem label="Проверить OCR" value={stats.ocrUncertain} variant="ocr" />
+          <StatItem label="Технические" value={stats.technical} variant="technical" />
         </div>
       )}
 
@@ -76,7 +113,7 @@ function StatItem({
 }: {
   label: string;
   value: number;
-  variant: 'total' | 'file1' | 'file2' | 'changed';
+  variant: 'total' | 'substantive' | 'ocr' | 'technical';
 }) {
   return (
     <div className={`stat-item stat-item--${variant}`}>

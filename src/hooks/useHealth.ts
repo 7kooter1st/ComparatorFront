@@ -23,9 +23,12 @@ export function useHealth(pollIntervalMs = 30_000) {
   }, []);
 
   useEffect(() => {
-    void refresh();
+    const initialId = window.setTimeout(() => void refresh(), 0);
     const id = window.setInterval(() => void refresh(), pollIntervalMs);
-    return () => window.clearInterval(id);
+    return () => {
+      window.clearTimeout(initialId);
+      window.clearInterval(id);
+    };
   }, [refresh, pollIntervalMs]);
 
   return { health, loading, error, refresh };

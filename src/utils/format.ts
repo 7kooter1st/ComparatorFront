@@ -1,4 +1,8 @@
-import type { LineDifference, LineDiffKind } from '../types/api';
+import type {
+  DifferenceCategory,
+  LineDifference,
+  LineDiffKind,
+} from '../types/api';
 
 export const DIFF_KIND_LABELS: Record<LineDiffKind, string> = {
   only_in_file1: 'Только в документе 1',
@@ -28,6 +32,31 @@ export function countByKind(differences: LineDifference[]) {
   }
 
   return { onlyInFile1, onlyInFile2, changed, total: differences.length };
+}
+
+export function getDifferenceCategory(entry: LineDifference): DifferenceCategory {
+  if (entry.category === 'alignment_error') return 'ocr_uncertain';
+  return entry.category ?? 'substantive';
+}
+
+export function countByCategory(differences: LineDifference[]) {
+  let substantive = 0;
+  let ocrUncertain = 0;
+  let technical = 0;
+
+  for (const entry of differences) {
+    const category = getDifferenceCategory(entry);
+    if (category === 'technical') technical++;
+    else if (category === 'ocr_uncertain') ocrUncertain++;
+    else substantive++;
+  }
+
+  return {
+    substantive,
+    ocrUncertain,
+    technical,
+    total: differences.length,
+  };
 }
 
 export function isValidDocument(file: File): boolean {

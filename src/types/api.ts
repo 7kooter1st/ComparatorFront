@@ -27,16 +27,37 @@ export interface JobStatusData {
 /** Индексы символов в строке [start, end) — end не включается */
 export type CharSpan = [number, number];
 
+export type DifferenceCategory =
+  | 'substantive'
+  | 'technical'
+  | 'alignment_error'
+  | 'ocr_uncertain';
+
+export type ComparisonVerdict = 'identical' | 'content_equal' | 'different';
+
 export interface LineDifference {
+  candidate_id?: string | null;
   line_number?: number | null;
   file1_line?: string | null;
   file2_line?: string | null;
   file1_span?: CharSpan | null;
   file2_span?: CharSpan | null;
+  category?: DifferenceCategory;
+  technical_type?: string | null;
+  reason?: string | null;
+  confidence?: number | null;
+  protection_tags?: string[];
+  file1_page?: number | null;
+  file2_page?: number | null;
+  file1_block?: number | null;
+  file2_block?: number | null;
+  file1_source_type?: string | null;
+  file2_source_type?: string | null;
 }
 
 export interface ComparisonResult {
   identical: boolean;
+  verdict?: ComparisonVerdict;
   differences: LineDifference[];
 }
 
