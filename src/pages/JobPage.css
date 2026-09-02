@@ -1,0 +1,13 @@
+.job-page .page-heading {
+  align-items: flex-start;
+}
+
+.job-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.job-page h2 {
+  margin: 0.35rem 0 0;
+}

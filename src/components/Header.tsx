@@ -1,3 +1,5 @@
+import { NavLink } from 'react-router-dom';
+import { useAuth } from '../auth/AuthContext';
 import type { HealthResponse } from '../types/api';
 import './Header.css';
 
@@ -14,12 +16,13 @@ export function Header({
   healthError,
   onRefreshHealth,
 }: HeaderProps) {
-  const processingOk = health?.processing_service_reachable === true;
-  const statusClass = healthError
+  const { user, logout } = useAuth();
+  const available = !healthError && health?.status === 'ok';
+  const statusClass = healthError || !health
     ? 'status-dot--error'
-    : health?.status === 'ok'
+    : available
       ? 'status-dot--ok'
-      : 'status-dot--warn';
+      : 'status-dot--error';
 
   return (
     <header className="app-header">
@@ -31,43 +34,43 @@ export function Header({
             <path d="M8 10h8M8 14h5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
           </svg>
         </div>
-        <div>
-          <h1 className="header-title">Document Comparator</h1>
-          <p className="header-subtitle">Kafka chunking + WebSocket прогресс</p>
-        </div>
+        <h1 className="header-title">Document Comparator</h1>
       </div>
 
+      {user && (
+        <nav className="header-nav">
+          <NavLink to="/" end>
+            Сравнить
+          </NavLink>
+          <NavLink to="/jobs">История</NavLink>
+          {user.role === 'admin' && <NavLink to="/admin/users">Пользователи</NavLink>}
+        </nav>
+      )}
+
       <div className="header-status">
+        {user && (
+          <div className="header-user">
+            <span>{user.username}</span>
+            <button type="button" className="btn btn--secondary btn--small" onClick={() => void logout()}>
+              Выйти
+            </button>
+          </div>
+        )}
         <button
           type="button"
           className="status-badge"
           onClick={onRefreshHealth}
-          title="Обновить статус сервисов"
+          title="Обновить статус сервиса"
         >
           <span className={`status-dot ${statusClass}`} />
           <span className="status-text">
             {healthLoading && !health && !healthError
               ? 'Проверка…'
-              : healthError
-                ? 'Сервис недоступен'
-                : health?.status === 'ok'
-                  ? 'Chunking Service OK'
-                  : 'Частичная деградация'}
+              : available
+                ? 'Сервис доступен'
+                : 'Сервис недоступен'}
           </span>
         </button>
-
-        {health && !healthError && (
-          <div className="status-details">
-            <span className={processingOk ? 'pill pill--ok' : 'pill pill--warn'}>
-              Processing {processingOk ? 'доступен' : 'недоступен'}
-            </span>
-            {health.kafka_producer !== undefined && (
-              <span className="pill pill--neutral">
-                Kafka {health.kafka_producer ? 'OK' : 'нет'}
-              </span>
-            )}
-          </div>
-        )}
       </div>
     </header>
   );

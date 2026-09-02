@@ -37,7 +37,7 @@ export function DiffEntry({ entry, index }: DiffEntryProps) {
             ? 'Содержательное'
             : category === 'technical'
               ? 'Техническое'
-              : 'Проверить OCR'}
+              : 'Проверить текст'}
         </span>
         {entry.line_number != null && (
           <span className="line-ref">строка {entry.line_number}</span>

@@ -74,6 +74,11 @@
   color: var(--danger);
 }
 
+.btn--small {
+  padding: 0.4rem 0.8rem;
+  font-size: 0.8rem;
+}
+
 .loading-state {
   display: flex;
   align-items: center;

@@ -123,7 +123,7 @@ export function watchJob(
     ws.onerror = () => {
       cleanup();
       signal?.removeEventListener('abort', onAbort);
-      finish(() => reject(new Error('Ошибка WebSocket соединения')));
+      finish(() => reject(new Error('Не удалось получить статус сравнения. Обновите страницу.')));
     };
 
     ws.onclose = (event) => {
@@ -132,7 +132,8 @@ export function watchJob(
         finish(() =>
           reject(
             new Error(
-              event.reason || `WebSocket закрыт до получения результата (код ${event.code})`,
+              event.reason ||
+                'Соединение прервалось до завершения сравнения. Откройте задачу из истории.',
             ),
           ),
         );

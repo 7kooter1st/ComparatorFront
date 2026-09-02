@@ -1,31 +1,26 @@
-import { useCallback, useState } from 'react';
-import { CompareForm } from './components/CompareForm';
-import { DiffList } from './components/DiffList';
+import { Navigate, Outlet, Route, Routes, useLocation } from 'react-router-dom';
 import { Header } from './components/Header';
-import { SummaryCard } from './components/SummaryCard';
+import { useAuth } from './auth/AuthContext';
 import { useHealth } from './hooks/useHealth';
-import type { ComparisonViewModel } from './types/api';
+import { AdminUsersPage } from './pages/AdminUsersPage';
+import { ComparePage } from './pages/ComparePage';
+import { HistoryPage } from './pages/HistoryPage';
+import { JobPage } from './pages/JobPage';
+import { LoginPage } from './pages/LoginPage';
 import './App.css';
 
-function App() {
+function ProtectedLayout() {
+  const { user, loading } = useAuth();
+  const location = useLocation();
   const { health, loading: healthLoading, error: healthError, refresh } = useHealth();
-  const [result, setResult] = useState<ComparisonViewModel | null>(null);
-  const [error, setError] = useState<{ message: string; hint?: string } | null>(null);
 
-  const handleStart = useCallback(() => {
-    setError(null);
-    setResult(null);
-  }, []);
+  if (loading) {
+    return <p className="muted">Проверка сессии…</p>;
+  }
 
-  const handleResult = useCallback((data: ComparisonViewModel) => {
-    setResult(data);
-    setError(null);
-  }, []);
-
-  const handleError = useCallback((message: string, hint?: string) => {
-    setError({ message, hint });
-    setResult(null);
-  }, []);
+  if (!user) {
+    return <Navigate to="/login" replace state={{ from: location.pathname }} />;
+  }
 
   return (
     <div className="app">
@@ -35,31 +30,9 @@ function App() {
         healthError={healthError}
         onRefreshHealth={() => void refresh()}
       />
-
       <main className="app-main">
-        <section className="upload-section">
-          <CompareForm
-            onResult={handleResult}
-            onError={handleError}
-            onStart={handleStart}
-          />
-        </section>
-
-        {error && (
-          <div className="alert alert--error" role="alert">
-            <strong>{error.message}</strong>
-            {error.hint && <p className="alert-hint">{error.hint}</p>}
-          </div>
-        )}
-
-        {result && (
-          <section className="results-section">
-            <SummaryCard result={result} />
-            <DiffList result={result} />
-          </section>
-        )}
+        <Outlet />
       </main>
-
       <footer className="app-footer">
         <p>
           API:{' '}
@@ -69,6 +42,29 @@ function App() {
         </p>
       </footer>
     </div>
+  );
+}
+
+function AdminRoute() {
+  const { user } = useAuth();
+  if (user?.role !== 'admin') {
+    return <Navigate to="/" replace />;
+  }
+  return <AdminUsersPage />;
+}
+
+function App() {
+  return (
+    <Routes>
+      <Route path="/login" element={<LoginPage />} />
+      <Route element={<ProtectedLayout />}>
+        <Route path="/" element={<ComparePage />} />
+        <Route path="/jobs" element={<HistoryPage />} />
+        <Route path="/jobs/:jobId" element={<JobPage />} />
+        <Route path="/admin/users" element={<AdminRoute />} />
+      </Route>
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   );
 }
 

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { runCompareJob } from '../api/client';
+import { runCompareJob, submitCompareJob } from '../api/client';
 import type { ComparisonViewModel, JobProgressState } from '../types/api';
 import { ApiError, JobError } from '../types/api';
 import { FileUploadZone } from './FileUploadZone';
@@ -10,9 +10,10 @@ interface CompareFormProps {
   onResult: (result: ComparisonViewModel) => void;
   onError: (message: string, hint?: string) => void;
   onStart: () => void;
+  onQueued?: (jobId: string) => void;
 }
 
-export function CompareForm({ onResult, onError, onStart }: CompareFormProps) {
+export function CompareForm({ onResult, onError, onStart, onQueued }: CompareFormProps) {
   const [file1, setFile1] = useState<File | null>(null);
   const [file2, setFile2] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
@@ -65,6 +66,11 @@ export function CompareForm({ onResult, onError, onStart }: CompareFormProps) {
       onStart();
 
       try {
+        if (onQueued) {
+          const job = await submitCompareJob(file1, file2, controller.signal);
+          onQueued(job.job_id);
+          return;
+        }
         const result = await runCompareJob(
           file1,
           file2,
@@ -87,7 +93,7 @@ export function CompareForm({ onResult, onError, onStart }: CompareFormProps) {
         resetWsTimer();
       }
     },
-    [file1, file2, onResult, onError, onStart, handleWsOpen, resetWsTimer],
+    [file1, file2, onResult, onError, onStart, onQueued, handleWsOpen, resetWsTimer],
   );
 
   const handleCancel = useCallback(() => {
@@ -122,7 +128,7 @@ export function CompareForm({ onResult, onError, onStart }: CompareFormProps) {
           <>
             <div className="loading-state">
               <span className="spinner" aria-hidden />
-              <span>Ожидание результата через WebSocket…</span>
+              <span>Идёт сравнение документов…</span>
             </div>
             <button type="button" className="btn btn--secondary" onClick={handleCancel}>
               Отмена
@@ -140,14 +146,11 @@ export function CompareForm({ onResult, onError, onStart }: CompareFormProps) {
       )}
 
       {loading && !progress && (
-        <p className="form-hint">Загрузка файлов и постановка задачи в Kafka…</p>
+        <p className="form-hint">Загрузка файлов и постановка процесса в очередь…</p>
       )}
 
       {loading && progress && (
-        <p className="form-hint">
-          Документы разбиты на чанки и обрабатываются Processing Service. Прогресс приходит по
-          WebSocket.
-        </p>
+        <p className="form-hint">Документы обрабатываются. Это может занять несколько минут.</p>
       )}
     </form>
   );

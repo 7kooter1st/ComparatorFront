@@ -1,0 +1,50 @@
+.page-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.page-heading h2 {
+  margin: 0;
+  color: var(--text-heading);
+}
+
+.muted {
+  color: var(--text-muted);
+}
+
+.table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+}
+
+.jobs-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.jobs-table th,
+.jobs-table td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+.jobs-table th {
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.jobs-table tr:last-child td {
+  border-bottom: none;
+}
+
+.btn--small {
+  padding: 0.4rem 0.8rem;
+  font-size: 0.8rem;
+}

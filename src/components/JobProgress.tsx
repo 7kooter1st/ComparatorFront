@@ -1,5 +1,6 @@
 import type { JobProgressState } from '../types/api';
 import { formatElapsedMs } from '../utils/format';
+import { friendlyJobMessage, jobStatusLabel } from '../utils/jobStatus';
 import './JobProgress.css';
 
 interface JobProgressProps {
@@ -16,20 +17,19 @@ export function JobProgress({ progress, wsActive = false, wsElapsedMs }: JobProg
 
   const isComplete = progress.status === 'completed';
   const isFailed = progress.status === 'failed';
+  const message = friendlyJobMessage(progress.message, progress.status);
+  const hasCounts = progress.totalChunks > 0;
 
   return (
     <section className="job-progress" aria-live="polite">
       <div className="job-progress-header">
-        <h2 className="job-progress-title">Обработка задачи</h2>
+        <h2 className="job-progress-title">Ход сравнения</h2>
         <div className="job-progress-header-right">
           {wsActive && wsElapsedMs != null && (
-            <span className="job-progress-timer" title="От открытия WebSocket до ответа">
-              WebSocket: {formatElapsedMs(wsElapsedMs)}
+            <span className="job-progress-timer" title="Время с начала обработки">
+              {formatElapsedMs(wsElapsedMs)}
             </span>
           )}
-          <span className="job-progress-id" title={progress.jobId}>
-            {progress.jobId.slice(0, 8)}…
-          </span>
         </div>
       </div>
 
@@ -42,30 +42,20 @@ export function JobProgress({ progress, wsActive = false, wsElapsedMs }: JobProg
 
       <div className="job-progress-meta">
         <span className="job-progress-chunks">
-          {progress.processedChunks} / {progress.totalChunks} чанков
+          {hasCounts
+            ? `Обработано ${progress.processedChunks} из ${progress.totalChunks}`
+            : 'Ожидание начала обработки'}
         </span>
-        <span className="job-progress-status">{progress.status}</span>
+        <span className="job-progress-status">{jobStatusLabel(progress.status)}</span>
       </div>
 
-      {progress.message && <p className="job-progress-message">{progress.message}</p>}
+      {message && <p className="job-progress-message">{message}</p>}
 
       {(progress.file1 || progress.file2) && (
         <div className="job-progress-files">
-          {progress.file1 && (
-            <span>
-              {progress.file1.filename} — {progress.file1.chunks} чанк.
-            </span>
-          )}
-          {progress.file2 && (
-            <span>
-              {progress.file2.filename} — {progress.file2.chunks} чанк.
-            </span>
-          )}
+          {progress.file1 && <span>{progress.file1.filename}</span>}
+          {progress.file2 && <span>{progress.file2.filename}</span>}
         </div>
-      )}
-
-      {progress.kafkaTopic && (
-        <p className="job-progress-topic">Kafka: {progress.kafkaTopic}</p>
       )}
     </section>
   );

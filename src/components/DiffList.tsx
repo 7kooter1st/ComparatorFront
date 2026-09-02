@@ -122,7 +122,7 @@ export function DiffList({ result }: DiffListProps) {
           />
           <DifferenceGroup
             category="ocr_uncertain"
-            title="Требуют проверки OCR"
+            title="Требуют проверки текста"
             description="Различие оставлено видимым: по распознанному тексту его нельзя безопасно скрыть."
             items={grouped.ocr_uncertain}
           />

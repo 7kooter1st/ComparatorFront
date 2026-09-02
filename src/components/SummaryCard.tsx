@@ -11,7 +11,7 @@ interface SummaryCardProps {
 }
 
 export function SummaryCard({ result }: SummaryCardProps) {
-  const { comparison, jobId, totalChunks, file1, file2, wsRoundTripMs } = result;
+  const { comparison, jobId, file1, file2, wsRoundTripMs } = result;
   const stats = countByCategory(comparison.differences);
   const verdict = comparison.verdict ?? (
     comparison.identical ? 'identical' : 'different'
@@ -67,7 +67,7 @@ export function SummaryCard({ result }: SummaryCardProps) {
                         'различие требует',
                         'различия требуют',
                         'различий требуют',
-                      )} проверки OCR`}
+                      )} проверки распознавания`}
                 </p>
               </div>
             </>
@@ -79,9 +79,8 @@ export function SummaryCard({ result }: SummaryCardProps) {
           <span className="summary-job-value" title={jobId}>
             {jobId.slice(0, 8)}…
           </span>
-          <span className="summary-job-chunks">{totalChunks} чанков</span>
           {wsRoundTripMs != null && (
-            <span className="summary-job-timer" title="WebSocket: от подключения до result">
+            <span className="summary-job-timer" title="Время сравнения">
               {formatElapsedMs(wsRoundTripMs)}
             </span>
           )}
@@ -92,15 +91,15 @@ export function SummaryCard({ result }: SummaryCardProps) {
         <div className="summary-stats">
           <StatItem label="Всего" value={stats.total} variant="total" />
           <StatItem label="Содержательные" value={stats.substantive} variant="substantive" />
-          <StatItem label="Проверить OCR" value={stats.ocrUncertain} variant="ocr" />
+          <StatItem label="Проверить текст" value={stats.ocrUncertain} variant="ocr" />
           <StatItem label="Технические" value={stats.technical} variant="technical" />
         </div>
       )}
 
       <div className="summary-files">
-        <span>{file1.filename} ({file1.chunks} чанк.)</span>
+        <span>{file1.filename}</span>
         <span className="summary-sep">·</span>
-        <span>{file2.filename} ({file2.chunks} чанк.)</span>
+        <span>{file2.filename}</span>
       </div>
     </section>
   );

@@ -40,15 +40,6 @@
   color: var(--text-heading);
 }
 
-.job-progress-id {
-  font-family: var(--mono);
-  font-size: 0.75rem;
-  color: var(--text-muted);
-  padding: 0.2rem 0.5rem;
-  border-radius: var(--radius-sm);
-  background: var(--surface-elevated);
-}
-
 .job-progress-bar-wrap {
   height: 8px;
   border-radius: 999px;
@@ -88,8 +79,7 @@
 }
 
 .job-progress-status {
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.01em;
   font-weight: 600;
 }
 
@@ -105,12 +95,5 @@
   gap: 0.25rem;
   margin-top: 0.75rem;
   font-size: 0.8125rem;
-  color: var(--text-muted);
-}
-
-.job-progress-topic {
-  margin: 0.5rem 0 0;
-  font-size: 0.75rem;
-  font-family: var(--mono);
   color: var(--text-muted);
 }
