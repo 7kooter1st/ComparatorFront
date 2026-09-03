@@ -91,6 +91,7 @@ export interface HealthResponse {
   kafka_producer?: boolean;
   processing_service_reachable?: boolean;
   processing?: Record<string, unknown> | string;
+  object_store?: boolean;
 }
 
 export interface ErrorResponse {
@@ -163,6 +164,8 @@ export interface JobListItem {
   verdict?: string | null;
   created_at?: string | null;
   updated_at?: string | null;
+  queue_position?: number | null;
+  active_count?: number | null;
   websocket_url?: string | null;
 }
 

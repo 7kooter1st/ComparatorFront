@@ -104,6 +104,10 @@ export async function getJobResult(jobId: string): Promise<ResultResponse> {
   return request<ResultResponse>(`${API_BASE}/jobs/${jobId}/result`);
 }
 
+export async function cancelJob(jobId: string): Promise<void> {
+  await request(`${API_BASE}/jobs/${jobId}/cancel`, { method: 'POST' });
+}
+
 export async function deleteJob(jobId: string): Promise<void> {
   await request(`${API_BASE}/jobs/${jobId}`, { method: 'DELETE' });
 }

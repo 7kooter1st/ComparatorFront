@@ -131,7 +131,7 @@ export function CompareForm({ onResult, onError, onStart, onQueued }: CompareFor
               <span>Идёт сравнение документов…</span>
             </div>
             <button type="button" className="btn btn--secondary" onClick={handleCancel}>
-              Отмена
+              Прервать загрузку
             </button>
           </>
         ) : (

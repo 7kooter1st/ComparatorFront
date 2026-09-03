@@ -4,6 +4,12 @@ const STATUS_LABELS: Record<string, string> = {
   processing: 'Сканирование файлов',
   ocr_ready: 'Сканирование завершено',
   comparing: 'Сравнение документов',
+  classifying: 'Проверка различий',
+  finalizing: 'Сохранение результата',
+  cancel_requested: 'Отмена…',
+  cancelled: 'Отменено',
+  deleting: 'Удаление…',
+  deleted: 'Удалено',
   completed: 'Готово',
   failed: 'Ошибка',
 };

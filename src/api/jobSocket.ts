@@ -9,8 +9,8 @@ import { JobError } from '../types/api';
 
 export interface JobSocketCallbacks {
   onStatus?: (status: JobStatusData) => void;
-  /** WebSocket соединение установлено — начало отсчёта */
   onOpen?: () => void;
+  onDisconnect?: () => void;
 }
 
 function getWsBase(): string {
@@ -41,6 +41,11 @@ export function resolveJobWebSocketUrl(jobId: string, websocketUrl?: string): st
   return `${getWsBase()}/ws/jobs/${jobId}`;
 }
 
+export function nextReconnectDelayMs(attempt: number, baseMs = 1000, maxMs = 15000): number {
+  const exp = Math.min(maxMs, baseMs * 2 ** Math.max(0, attempt));
+  return exp;
+}
+
 function isResultData(data: unknown): data is ResultResponse {
   return typeof data === 'object' && data !== null && 'comparison' in data;
 }
@@ -53,22 +58,20 @@ function isStatusData(data: unknown): data is JobStatusData {
   return typeof data === 'object' && data !== null && 'processed_chunks' in data;
 }
 
-export function watchJob(
-  jobId: string,
-  websocketUrl: string | undefined,
+function connectOnce(
+  url: string,
   callbacks: JobSocketCallbacks,
-  signal?: AbortSignal,
-): Promise<{ comparison: ComparisonResult; wsRoundTripMs: number }> {
+  signal: AbortSignal | undefined,
+  wsStartRef: { current: number | null },
+): Promise<{ comparison: ComparisonResult; wsRoundTripMs: number } | 'closed'> {
   return new Promise((resolve, reject) => {
-    let settled = false;
-    let wsStart: number | null = null;
-    const url = resolveJobWebSocketUrl(jobId, websocketUrl);
     const ws = new WebSocket(url);
+    let settled = false;
 
-    const finish = (fn: () => void) => {
+    const finish = (value: { comparison: ComparisonResult; wsRoundTripMs: number } | 'closed') => {
       if (settled) return;
       settled = true;
-      fn();
+      resolve(value);
     };
 
     const cleanup = () => {
@@ -79,13 +82,16 @@ export function watchJob(
 
     const onAbort = () => {
       cleanup();
-      finish(() => reject(new DOMException('Aborted', 'AbortError')));
+      if (!settled) {
+        settled = true;
+        reject(new DOMException('Aborted', 'AbortError'));
+      }
     };
 
     signal?.addEventListener('abort', onAbort, { once: true });
 
     ws.onopen = () => {
-      wsStart = performance.now();
+      wsStartRef.current = performance.now();
       callbacks.onOpen?.();
     };
 
@@ -105,39 +111,66 @@ export function watchJob(
       if (message.type === 'result' && isResultData(message.data)) {
         const resultData = message.data;
         const wsRoundTripMs =
-          wsStart != null ? Math.round(performance.now() - wsStart) : 0;
+          wsStartRef.current != null ? Math.round(performance.now() - wsStartRef.current) : 0;
         cleanup();
         signal?.removeEventListener('abort', onAbort);
-        finish(() => resolve({ comparison: resultData.comparison, wsRoundTripMs }));
+        finish({ comparison: resultData.comparison, wsRoundTripMs });
         return;
       }
 
       if (message.type === 'error' && isErrorData(message.data)) {
-        const errorData = message.data;
-        cleanup();
-        signal?.removeEventListener('abort', onAbort);
-        finish(() => reject(new JobError(errorData.message, errorData.details)));
+        callbacks.onStatus?.({
+          status: 'failed',
+          processed_chunks: 0,
+          total_chunks: 0,
+          message: message.data.message,
+        });
       }
     };
 
     ws.onerror = () => {
-      cleanup();
-      signal?.removeEventListener('abort', onAbort);
-      finish(() => reject(new Error('Не удалось получить статус сравнения. Обновите страницу.')));
+      callbacks.onDisconnect?.();
     };
 
-    ws.onclose = (event) => {
+    ws.onclose = () => {
       signal?.removeEventListener('abort', onAbort);
       if (!settled) {
-        finish(() =>
-          reject(
-            new Error(
-              event.reason ||
-                'Соединение прервалось до завершения сравнения. Откройте задачу из истории.',
-            ),
-          ),
-        );
+        callbacks.onDisconnect?.();
+        finish('closed');
       }
     };
   });
+}
+
+export function watchJob(
+  jobId: string,
+  websocketUrl: string | undefined,
+  callbacks: JobSocketCallbacks,
+  signal?: AbortSignal,
+): Promise<{ comparison: ComparisonResult; wsRoundTripMs: number }> {
+  const url = resolveJobWebSocketUrl(jobId, websocketUrl);
+  const wsStartRef = { current: null as number | null };
+
+  return (async () => {
+    let attempt = 0;
+    while (!signal?.aborted) {
+      try {
+        const result = await connectOnce(url, callbacks, signal, wsStartRef);
+        if (result !== 'closed') {
+          return result;
+        }
+      } catch (err) {
+        if (err instanceof DOMException && err.name === 'AbortError') {
+          throw err;
+        }
+        if (err instanceof JobError) {
+          throw err;
+        }
+      }
+      attempt += 1;
+      const delay = nextReconnectDelayMs(attempt);
+      await new Promise((resolve) => window.setTimeout(resolve, delay));
+    }
+    throw new DOMException('Aborted', 'AbortError');
+  })();
 }
